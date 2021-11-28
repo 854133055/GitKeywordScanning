@@ -30,6 +30,10 @@ public class HttpUtil {
         return httpClient == null ? init() : httpClient;
     }
 
+    public static void setInstance(OkHttpClient okHttpClient) {
+        HttpUtil.httpClient = okHttpClient;
+    }
+
     public static OkHttpClient.Builder getInstanceBuilder() {
         if (httpClientBuilder == null) {
             httpClientBuilder = new OkHttpClient.Builder()
@@ -38,10 +42,6 @@ public class HttpUtil {
                     .readTimeout(30, TimeUnit.SECONDS);
         }
         return httpClientBuilder;
-    }
-
-    public static void setInstance(OkHttpClient okHttpClient) {
-        HttpUtil.httpClient = okHttpClient;
     }
 
 }

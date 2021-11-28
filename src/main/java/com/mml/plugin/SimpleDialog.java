@@ -10,6 +10,7 @@ import com.intellij.uiDesigner.core.Spacer;
 import com.mml.plugin.constants.Constants;
 import com.mml.plugin.constants.TaskType;
 import com.mml.plugin.remote.resp.GitInfo;
+import com.mml.plugin.utils.FileUtil;
 import com.mml.plugin.utils.StringUtils;
 import org.jsoup.internal.StringUtil;
 
@@ -19,6 +20,9 @@ import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
+
+import static com.mml.plugin.constants.Constants.GITTOKENKEY;
+import static com.mml.plugin.constants.Constants.GitURlKEY;
 
 public class SimpleDialog extends JDialog {
     private JPanel contentPane;
@@ -35,23 +39,32 @@ public class SimpleDialog extends JDialog {
     public JRadioButton SpecialRadioButton;
     public JLabel project;
     private ActionListener actionListener;
+    private String fileType = "*.*";
 
     public SimpleDialog(ActionListener runTaskListener) {
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         actionListener = runTaskListener;
+        gitlabhost.setText(FileUtil.INSTANCE.getConfigInfo(GitURlKEY));
+        token.setText(FileUtil.INSTANCE.getConfigInfo(GITTOKENKEY));
 
         buttonOK.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if (!StringUtils.INSTANCE.isEmpty(getScanKey()) &&
-                        !StringUtils.INSTANCE.isEmpty(getGitlabHost()) &&
-                        !StringUtils.INSTANCE.isEmpty(getGitlabToken())) {
+                if (gitlabhost.getText() !=null && !gitlabhost.getText().isEmpty()) {
+                    FileUtil.INSTANCE.saveConfigInfo(GitURlKEY, gitlabhost.getText());
+                }
+                if (token.getText() != null && !token.getText().isEmpty()) {
+                    FileUtil.INSTANCE.saveConfigInfo(GITTOKENKEY, token.getText());
+                }
+//                if (!StringUtils.INSTANCE.isEmpty(getScanKey()) &&
+//                        !StringUtils.INSTANCE.isEmpty(getGitlabHost()) &&
+//                        !StringUtils.INSTANCE.isEmpty(getGitlabToken())) {
                     if (actionListener != null) {
                         actionListener.actionPerformed(new ActionEvent(e, TaskType.runTask.ordinal(), "runTask")); //执行扫描操作
                     }
 //                    dispose();
-                }
+//                }
             }
         });
 
@@ -62,9 +75,9 @@ public class SimpleDialog extends JDialog {
         });
 
         filecomboBox.setEnabled(false);
-        fileMask.addChangeListener(new ChangeListener() {
+        fileMask.addItemListener(new ItemListener() {
             @Override
-            public void stateChanged(ChangeEvent changeEvent) {
+            public void itemStateChanged(ItemEvent itemEvent) {
                 if (fileMask.isSelected()) {
                     filecomboBox.setEnabled(true);
                 } else {
@@ -73,9 +86,8 @@ public class SimpleDialog extends JDialog {
                 }
             }
         });
-
+        filecomboBox.addItemListener(itemEvent -> fileType = (String) filecomboBox.getSelectedItem());
         SpecialRadioButton.addItemListener(new ItemListener() {
-
             @Override
             public void itemStateChanged(ItemEvent itemEvent) {
                 if (itemEvent.getStateChange() == ItemEvent.SELECTED) {
@@ -150,11 +162,7 @@ public class SimpleDialog extends JDialog {
      * 获取选中的文件类型
      */
     public String getFileType() {
-        if (fileMask.isSelected()) {
-            return filecomboBox.getToolTipText();
-        } else {
-            return "*.*";
-        }
+        return fileType == null || fileType.isEmpty() ? "*.*" : fileType;
     }
 
     /**

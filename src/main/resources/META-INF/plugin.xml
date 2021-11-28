@@ -16,12 +16,16 @@
 <!--    <depends>org.intellij.groovy</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <toolWindow factoryClass="com.mml.plugin.ScanningLogcatFactory" id="scanning" secondary="true"
+                    canCloseContents="true" anchor="bottom" />
     </extensions>
+
 
     <actions>
         <action id="code_scan" class="com.mml.plugin.actions.GitKeywordScanning" text="GitCodeScan" description="代码扫描工具">
             <add-to-group group-id="ToolsMenu" anchor="first"/>
         </action>
     </actions>
+
+
 </idea-plugin>

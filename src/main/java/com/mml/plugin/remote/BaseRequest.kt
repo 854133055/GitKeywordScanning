@@ -12,16 +12,16 @@ import java.io.IOException
 
 object BaseRequest {
 
-    var token : String = "";
-    var gitHost : String = "";
+    var token: String = ""
+    var gitHost: String = ""
 
     fun commonGetRequest(params: JSONObject?, url: String, listener: MCallback) {
         val request = Request.Builder()
-        .addHeader("PRIVATE-TOKEN", token)
-        .url(url)
-        .build()
+            .addHeader("PRIVATE-TOKEN", token)
+            .url(url)
+            .build()
 
-        HttpUtil.getInstance().newCall(request).enqueue(object : MCallback(){
+        HttpUtil.getInstance().newCall(request).enqueue(object : MCallback() {
             override fun onResponse(call: Call, response: Response) {
                 if (response.body() != null && response.code() == 200) {
                     listener.onSuccess(response)

@@ -2,6 +2,7 @@ package com.mml.plugin.constants
 
 object Constants {
 
+    public final const val SCANNINGLOGCAT_ID = "scanning"
     /**
      * 当前所有git group信息
      */
@@ -13,6 +14,10 @@ object Constants {
     public final const val SELECTED = 1
     public final const val UNSELECTED = 0
 
+    public final const val MMMMMM = 42
+
+    public final const val GitURlKEY = "gitUrl"
+    public final const val GITTOKENKEY = "gitToken"
 }
 
 enum class TaskType(value : Int) {
