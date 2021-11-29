@@ -4,11 +4,9 @@ import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.util.io.FileUtilRt
 import java.io.File
 import java.io.IOException
-import java.nio.file.*
-import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.DirectoryStream
-
+import java.nio.file.Files
 import java.nio.file.LinkOption
+import java.nio.file.Path
 
 
 object FileUtil {
@@ -17,8 +15,8 @@ object FileUtil {
         PropertiesComponent.getInstance().setValue(key, value)
     }
 
-    fun getConfigInfo(key: String) : String {
-        return PropertiesComponent.getInstance().getValue(key) ?:""
+    fun getConfigInfo(key: String): String {
+        return PropertiesComponent.getInstance().getValue(key) ?: ""
     }
 
     fun getSavePath(): String {
@@ -54,7 +52,5 @@ object FileUtil {
             }
         }
     }
-
-
 
 }

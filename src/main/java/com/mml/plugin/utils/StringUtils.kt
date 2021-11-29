@@ -4,10 +4,8 @@ object StringUtils {
     fun isEmpty(str: String?): Boolean {
         return str == null || str.isEmpty()
     }
+
     private val logcatContent = StringBuilder()
-
-
-
 
 
 }

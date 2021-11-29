@@ -10,6 +10,10 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -22,9 +26,9 @@ public class ScanningLogcat {
 
     private ToolWindow myToolWindow;
     private JPanel mPanel;
-    private JTextArea txtContent;
     private JScrollPane mScrollPane;
     private JTextArea textArea1;
+    private JTextPane textContent;
     private static StringBuilder logcatContent = new StringBuilder();
 
     public ScanningLogcat(ToolWindow toolWindow) {
@@ -46,11 +50,11 @@ public class ScanningLogcat {
 
     public void init() {
         // 禁止编辑 2017/3/18 19:57
-        txtContent.setEditable(false);
-        txtContent.setText(logcatContent.toString());
+        textContent.setEditable(false);
+        textContent.setText(logcatContent.toString());
 
         // 去除边框 2017/3/19 08:58
-        txtContent.setBorder(BorderFactory.createLineBorder(Color.BLACK, 0));
+        textContent.setBorder(BorderFactory.createLineBorder(Color.BLACK, 0));
         mScrollPane.setBorder(BorderFactory.createLineBorder(Color.BLACK, 0));
         mPanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 0));
 
@@ -58,19 +62,30 @@ public class ScanningLogcat {
         mPanel.setOpaque(false);
         mScrollPane.setOpaque(false);
         mScrollPane.getViewport().setOpaque(false);
-        txtContent.setOpaque(false);
+        textContent.setOpaque(false);
 
-        txtContent.removeMouseListener(mouseListener);
-        txtContent.addMouseListener(mouseListener);
+        textContent.removeMouseListener(mouseListener);
+        textContent.addMouseListener(mouseListener);
 
         // 鼠标事件 2017/3/18 19:57
-        txtContent.removeMouseListener(mouseAdapter);
-        txtContent.addMouseListener(mouseAdapter);
+        textContent.removeMouseListener(mouseAdapter);
+        textContent.addMouseListener(mouseAdapter);
 
         // 输入变化事件 2017/3/18 19:58
-        txtContent.getCaret().removeChangeListener(changeListener);
-        txtContent.getCaret().addChangeListener(changeListener);
+        textContent.getCaret().removeChangeListener(changeListener);
+        textContent.getCaret().addChangeListener(changeListener);
     }
+
+    private void appendToPane(JTextPane textContent, String msg, Color color) {
+        StyleContext sc = StyleContext.getDefaultStyleContext();
+        AttributeSet aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, color);
+
+        int len = textContent.getDocument().getLength();
+        textContent.setCaretPosition(len);
+        textContent.setCharacterAttributes(aset, false);
+        textContent.replaceSelection(msg);
+    }
+
 
 
     /**
@@ -78,11 +93,11 @@ public class ScanningLogcat {
      */
     private MouseAdapter mouseAdapter = new MouseAdapter() {
         public void mouseEntered(MouseEvent mouseEvent) {
-            txtContent.setCursor(new Cursor(Cursor.TEXT_CURSOR));   //鼠标进入Text区后变为文本输入指针
+            textContent.setCursor(new Cursor(Cursor.TEXT_CURSOR));   //鼠标进入Text区后变为文本输入指针
         }
 
         public void mouseExited(MouseEvent mouseEvent) {
-            txtContent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));   //鼠标离开Text区后恢复默认形态
+            textContent.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));   //鼠标离开Text区后恢复默认形态
         }
     };
 
@@ -91,7 +106,7 @@ public class ScanningLogcat {
      */
     private ChangeListener changeListener = new ChangeListener() {
         public void stateChanged(ChangeEvent e) {
-            txtContent.getCaret().setVisible(true);   //使Text区的文本光标显示
+            textContent.getCaret().setVisible(true);   //使Text区的文本光标显示
         }
     };
 
@@ -122,9 +137,9 @@ public class ScanningLogcat {
                             public void run() {
                                 String value = list.getSelectedValue();
                                 if ("    Clear All".equals(value)) {
-                                    txtContent.setText("");
+                                    textContent.setText("");
                                 } else if ("    Select All".equals(value)) {
-                                    txtContent.selectAll();
+                                    textContent.selectAll();
                                 }
                             }
                         }).createPopup();

@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONArray
 import com.intellij.ide.plugins.PluginManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.io.FileUtilRt
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowManager
@@ -18,16 +17,18 @@ import com.mml.plugin.remote.GitRequest
 import com.mml.plugin.remote.MCallback
 import com.mml.plugin.remote.ShellExec
 import com.mml.plugin.remote.resp.GitInfo
+import io.reactivex.Observable
+import io.reactivex.ObservableOnSubscribe
+import io.reactivex.schedulers.Schedulers
 import okhttp3.Response
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
-import java.util.concurrent.Future
 import java.util.stream.Collectors
 import javax.swing.JScrollPane
-import javax.swing.JTextArea
+import javax.swing.JTextPane
 
 //3XbMAw12WfJw3z4p7o-V
-class GitKeywordScanning : AnAction(), ActionListener{
+class GitKeywordScanning : AnAction(), ActionListener {
 
     private var dialog: SimpleDialog? = null
     private var groupsList: MutableList<GitInfo>? = null
@@ -38,8 +39,8 @@ class GitKeywordScanning : AnAction(), ActionListener{
     private var groupsId: Int? = ALLID //选中的group。默认为全部
     private var projectId: Int? = ALLID //选中的group。默认为全部
     private var currentProject: GitInfo? = null
-    private var mLogcatWindow : ToolWindow? = null
-    private var mLogcatTv: JTextArea? = null
+    private var mLogcatWindow: ToolWindow? = null
+    private var mLogcatTv: JTextPane? = null
 
     override fun actionPerformed(e: AnActionEvent) {
         mAnActionEvent = e;
@@ -54,9 +55,6 @@ class GitKeywordScanning : AnAction(), ActionListener{
         return arrayListOf("*.java", "*.kt", "*.gradle", "*.xml", "*.properties")
     }
 
-    private fun getScanLogcatView() {
-
-    }
 
     /**
      * 执行扫描动作
@@ -78,7 +76,7 @@ class GitKeywordScanning : AnAction(), ActionListener{
         }
     }
 
-    private fun beginScan(actionEvent : AnActionEvent?) {
+    private fun beginScan(actionEvent: AnActionEvent?) {
         mAnActionEvent = actionEvent
         dialog?.dispose()
         showLogcatWindow()
@@ -92,19 +90,28 @@ class GitKeywordScanning : AnAction(), ActionListener{
             val gitUrlList = projectsList?.stream()?.map { it.ssh_url_to_repo }?.collect(Collectors.toList())
             ShellExec.getCloneAndScan(gitUrlList, dialog?.getScanKey()!!, fileType = dialog?.fileType!!)
         } else if (isSpecialModule && groupsId != ALLID && projectId != ALLID) {
-//            //扫描指定project
-//            var future : Future<*> = ApplicationManager.getApplication().executeOnPooledThread {
-//                val result : String = ShellExec.gitCloneAndScan(currentProject?.ssh_url_to_repo,
-//                dialog?.getScanKey()!!, fileType = dialog?.fileType!!)
-//            }
-//            var result = future.get() as String
-////            val result : String = ShellExec.gitCloneAndScan(currentProject?.ssh_url_to_repo,
-////                dialog?.getScanKey()!!, fileType = dialog?.fileType!!)
-//            updateLogcatResult(result)
+            runScanTask {
+                ShellExec.gitCloneAndScan(currentProject?.ssh_url_to_repo, dialog?.getScanKey()!!,
+                    fileType = dialog?.fileType!!)
+            }
         }
     }
 
-    private fun showLogcatWindow(){
+    private fun runScanTask(task: () -> String) {
+        try {
+            Observable.create(ObservableOnSubscribe<String> { emitter ->
+                emitter.onNext(task())
+            }).observeOn(Schedulers.computation())
+                .subscribeOn(Schedulers.io())
+                .subscribe {
+                    updateLogcatResult(it + "\n${it}\n\n")
+                }
+        } catch (e: Exception) {
+            updateLogcatResult("执行异常：\n $e")
+        }
+    }
+
+    private fun showLogcatWindow() {
         if (mLogcatWindow == null) {
             mAnActionEvent?.project?.apply {
                 mLogcatWindow = ToolWindowManager.getInstance(this).getToolWindow(SCANNINGLOGCAT_ID)
@@ -113,19 +120,26 @@ class GitKeywordScanning : AnAction(), ActionListener{
         if (mLogcatTv == null) {
             mLogcatWindow?.apply {
                 mLogcatTv = (contentManager.getContent(0)
-                    ?.component?.getComponent(0) as JScrollPane).viewport.getComponent(0) as JTextArea
+                    ?.component?.getComponent(0) as JScrollPane).viewport.getComponent(0) as JTextPane
             }
         }
         mLogcatWindow?.apply {
             show()
-            mLogcatTv?.text = "do scanning task..."
-        }?: kotlin.run {
+            updateLogcatResult("do scanning task...")
+        } ?: kotlin.run {
             PluginManager.getLogger().error("Scanning logcat get error")
         }
     }
 
-    private fun updateLogcatResult(scanResult : String? = "") {
+
+    private fun updateLogcatResult(scanResult: String? = "") {
         mLogcatTv?.text = scanResult
+//        val sc = StyleContext.getDefaultStyleContext()
+//        val aset = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Foreground, color)
+//        val len = textContent.document.length
+//        textContent.caretPosition = len
+//        textContent.setCharacterAttributes(aset, false)
+//        textContent.replaceSelection(msg)
     }
 
     /**

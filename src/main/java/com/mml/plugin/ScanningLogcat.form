@@ -23,10 +23,12 @@
         </properties>
         <border type="none"/>
         <children>
-          <component id="cbf77" class="javax.swing.JTextArea" binding="txtContent">
+          <component id="c8926" class="javax.swing.JTextPane" binding="textContent">
             <constraints/>
             <properties>
-              <text value="Initialization complete."/>
+              <name value=""/>
+              <opaque value="false"/>
+              <text value=""/>
             </properties>
           </component>
         </children>

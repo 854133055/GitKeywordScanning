@@ -8,7 +8,7 @@ object ShellExec {
     fun getCloneAndScan(gitUrls: List<String?>?, key: String, branch: String? = "develop",
                         fileType: String = "*.*"): String {
         val commands = StringBuilder()
-        commands.append("cd ${FileUtil.getCleanSaveFile().absolutePath} && rm -rf *").append(" && ")
+        commands.append("cd ${FileUtil.getSavePath()} && rm -rf *").append(" && ")
         gitUrls?.forEach {
             commands.append("git clone -b $branch $it").append(" && ")
         }
@@ -24,7 +24,7 @@ object ShellExec {
     }
 
 
-    fun gitCloneAndScan(gitUrl: String?, key: String, branch: String? = "develop", fileType: String = "*.*") : String {
+    fun gitCloneAndScan(gitUrl: String?, key: String, branch: String? = "develop", fileType: String = "*.*"): String {
         return getCloneAndScan(arrayListOf(gitUrl), key, branch, fileType)
     }
 

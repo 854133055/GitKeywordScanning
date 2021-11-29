@@ -11,12 +11,8 @@ import com.mml.plugin.constants.Constants;
 import com.mml.plugin.constants.TaskType;
 import com.mml.plugin.remote.resp.GitInfo;
 import com.mml.plugin.utils.FileUtil;
-import com.mml.plugin.utils.StringUtils;
-import org.jsoup.internal.StringUtil;
 
 import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
